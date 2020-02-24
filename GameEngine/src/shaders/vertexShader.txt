@@ -8,6 +8,7 @@ in vec3 normal;
 out vec2 pass_textureCoords;
 out vec3 surfaceNormal;
 out vec3 toLightVector;
+out vec3 toCameraVector;
 
 //Values given to us by main code
 uniform mat4 transformMatrix;
@@ -29,5 +30,8 @@ void main(void) {
 	
 	//The light vector is equal to the subtraction of the world position from the light position
 	toLightVector = lightPosition - worldPosition.xyz;
+	
+	//Our view matrix contains the negative of our camera position so we take the inverse
+	toCameraVector = (inverse(viewMatrix) * vec4(0.0,0.0,0.0,1.0)).xyz - worldPosition.xyz;
 
 }
