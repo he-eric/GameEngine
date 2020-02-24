@@ -1,16 +1,33 @@
 #version 400 core
 
+//Values stored in VBO
 in vec3 position;
 in vec2 textureCoords;
+in vec3 normal;
 
 out vec2 pass_textureCoords;
+out vec3 surfaceNormal;
+out vec3 toLightVector;
 
+//Values given to us by main code
 uniform mat4 transformMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
+uniform vec3 lightPosition;
 
 void main(void) {
-
-	gl_Position = projectionMatrix * viewMatrix * transformMatrix * vec4(position, 1.0);
+	
+	//World position is the position after being rotated
+	vec4 worldPosition = transformMatrix * vec4(position, 1.0);
+	
+	gl_Position = projectionMatrix * viewMatrix * worldPosition;
 	pass_textureCoords = textureCoords;
+
+	//Our entity will be rotating so the normal will be changing.
+	//Calculate the new normal with the transformation matrix
+	surfaceNormal = (transformMatrix * vec4(normal, 0.0)).xyz;
+	
+	//The light vector is equal to the subtraction of the world position from the light position
+	toLightVector = lightPosition - worldPosition.xyz;
+
 }

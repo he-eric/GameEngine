@@ -29,12 +29,14 @@ public class Loader {
 	
 	/*
 	 * Take in positions of the models vertices, load data into VAO, return info about VAO as a raw model object
+	 * -Edited to put in texture coordinates and normals into VAO as well.
 	 */
-	public RawModel loadToVAO(float[] positions, int[] indices, float[] textureCoords) {
+	public RawModel loadToVAO(float[] positions, int[] indices, float[] textureCoords, float[] normals) {
 		int vaoID = createVAO();
 		bindIndicesBuffer(indices);
 		storeDataInAttributeList(0, 3, positions);
 		storeDataInAttributeList(1, 2, textureCoords);
+		storeDataInAttributeList(2, 3, normals);
 		unbindVAO();
 		return new RawModel(vaoID, indices.length);
 	}

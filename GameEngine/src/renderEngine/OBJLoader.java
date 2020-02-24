@@ -14,7 +14,12 @@ import models.RawModel;
 
 public class OBJLoader {
 
+	/*
+	 * fileName: Name of file that holds our 3D object
+	 *   loader: Load up data from file into a VAO
+	 */
 	public static RawModel loadObjModel(String fileName, Loader loader) {
+		//Read in file with FileReader
 		FileReader fr = null;
 		try {
 			fr = new FileReader(new File("res/"+fileName+".obj"));
@@ -22,16 +27,27 @@ public class OBJLoader {
 			System.err.println("Couldn't load file");
 			e.printStackTrace();
 		}
+		
+		//Wrap BufferedReader around FileReader for efficient reading
 		BufferedReader reader = new BufferedReader(fr);
+		
+		//Line will hold each line read in
 		String line;
+		
+		//List of vertices, textures, normals to fill from the file
 		List<Vector3f> vertices = new ArrayList<Vector3f>();
 		List<Vector2f> textures = new ArrayList<Vector2f>();
 		List<Vector3f> normals  = new ArrayList<Vector3f>();
 		List<Integer> indices   = new ArrayList<Integer>();
+		
+		//Convert from List to arrays for loader to load to VAO
 		float[] verticesArray = null;
 		float[] texturesArray = null;
 		float[] normalsArray  = null;
+		
+		//Indices array for index buffer
 		int[] indicesArray    = null;
+		
 		try {
 			while(true) {
 				line = reader.readLine();
@@ -52,7 +68,7 @@ public class OBJLoader {
 				}
 				else if (line.startsWith("f ")) {
 					texturesArray = new float[vertices.size()*2];
-					normalsArray = new float[vertices.size()*3];
+					normalsArray  = new float[vertices.size()*3];
 					break;
 				}
 			}
@@ -62,6 +78,7 @@ public class OBJLoader {
 					line = reader.readLine();
 					continue;
 				}
+				//Example line = 1/2/3/ 2/3/4 3/4/5
 				String[] currentLine = line.split(" ");
 				String[] vertex1     = currentLine[1].split("/");
 				String[] vertex2     = currentLine[2].split("/");
@@ -89,16 +106,27 @@ public class OBJLoader {
 		for (int i = 0; i < indices.size(); i++) {
 			indicesArray[i] = indices.get(i);
 		}
-		return loader.loadToVAO(verticesArray, indicesArray, texturesArray);
+		return loader.loadToVAO(verticesArray, indicesArray, texturesArray, normalsArray);
 	}
 	
+	/*
+	 * ProcessVertex will fill List<Integer> indices, float[] textureArray, float[] normalsArray
+	 */
 	private static void processVertex(String[] vertexData, List<Integer> indices, 
 			List<Vector2f> textures, List<Vector3f> normals, float[] textureArray, float[] normalsArray) {
+		
+		//Example String[] vertexData: ["54", "25", "33"]
 		int currentVertexPointer = Integer.parseInt(vertexData[0]) - 1;
 		indices.add(currentVertexPointer);
+		
+		//We multiply by two because for every vertex added, two floats are added to textureArray
+		//Two floats are added because textures are 2D vectors
 		Vector2f currentTex = textures.get(Integer.parseInt(vertexData[1])-1);
 		textureArray[currentVertexPointer*2]   = currentTex.x;
+		//OpenGL starts y position differently from Blender
 		textureArray[currentVertexPointer*2+1] = 1- currentTex.y;
+		
+		//The same reasoning is applied for normals
 		Vector3f currentNorm = normals.get(Integer.parseInt(vertexData[2])-1);
 		normalsArray[currentVertexPointer*3]   = currentNorm.x;
 		normalsArray[currentVertexPointer*3+1] = currentNorm.y;
